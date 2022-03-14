@@ -22,6 +22,10 @@
 		ECC17B1A27DF962200AFCE37 /* ShaderTypes.h in Resources */ = {isa = PBXBuildFile; fileRef = ECC17AF427DF962100AFCE37 /* ShaderTypes.h */; };
 		ECC17B1B27DF962200AFCE37 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ECC17AF527DF962200AFCE37 /* Assets.xcassets */; };
 		ECC17B1C27DF962200AFCE37 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = ECC17AF527DF962200AFCE37 /* Assets.xcassets */; };
+		ECC17B2627DF9AB100AFCE37 /* MathLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECC17B2527DF9AB100AFCE37 /* MathLibrary.swift */; };
+		ECC17B2727DF9AB100AFCE37 /* MathLibrary.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECC17B2527DF9AB100AFCE37 /* MathLibrary.swift */; };
+		ECC17B2927DFBB1C00AFCE37 /* GZLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECC17B2827DFBB1C00AFCE37 /* GZLog.swift */; };
+		ECC17B2A27DFBB1C00AFCE37 /* GZLog.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECC17B2827DFBB1C00AFCE37 /* GZLog.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -39,6 +43,8 @@
 		ECC17B0F27DF962200AFCE37 /* GameViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GameViewController.swift; sourceTree = "<group>"; };
 		ECC17B1227DF962200AFCE37 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		ECC17B1427DF962200AFCE37 /* GBufferRender_macOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = GBufferRender_macOS.entitlements; sourceTree = "<group>"; };
+		ECC17B2527DF9AB100AFCE37 /* MathLibrary.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MathLibrary.swift; sourceTree = "<group>"; };
+		ECC17B2827DFBB1C00AFCE37 /* GZLog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = GZLog.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,10 +78,12 @@
 		ECC17AF127DF962100AFCE37 /* GBufferRender Shared */ = {
 			isa = PBXGroup;
 			children = (
+				ECC17B2827DFBB1C00AFCE37 /* GZLog.swift */,
 				ECC17AF227DF962100AFCE37 /* Shaders.metal */,
 				ECC17AF327DF962100AFCE37 /* Renderer.swift */,
 				ECC17AF427DF962100AFCE37 /* ShaderTypes.h */,
 				ECC17AF527DF962200AFCE37 /* Assets.xcassets */,
+				ECC17B2527DF9AB100AFCE37 /* MathLibrary.swift */,
 			);
 			path = "GBufferRender Shared";
 			sourceTree = "<group>";
@@ -215,9 +223,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				ECC17B1727DF962200AFCE37 /* Renderer.swift in Sources */,
+				ECC17B2927DFBB1C00AFCE37 /* GZLog.swift in Sources */,
 				ECC17B1527DF962200AFCE37 /* Shaders.metal in Sources */,
 				ECC17B0027DF962200AFCE37 /* GameViewController.swift in Sources */,
 				ECC17AFE27DF962200AFCE37 /* AppDelegate.swift in Sources */,
+				ECC17B2627DF9AB100AFCE37 /* MathLibrary.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -226,9 +236,11 @@
 			buildActionMask = 2147483647;
 			files = (
 				ECC17B1827DF962200AFCE37 /* Renderer.swift in Sources */,
+				ECC17B2A27DFBB1C00AFCE37 /* GZLog.swift in Sources */,
 				ECC17B1627DF962200AFCE37 /* Shaders.metal in Sources */,
 				ECC17B1027DF962200AFCE37 /* GameViewController.swift in Sources */,
 				ECC17B0E27DF962200AFCE37 /* AppDelegate.swift in Sources */,
+				ECC17B2727DF9AB100AFCE37 /* MathLibrary.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
