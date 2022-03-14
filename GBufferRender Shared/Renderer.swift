@@ -28,14 +28,12 @@ class Model {
         didSet {
             uniforms.modelMatrix = calcModelMatrix()
             uniforms.normalMatrix = uniforms.modelMatrix.inverse.transpose
-            GZLogFunc()
         }
     }
     var rotationY: Float = 0 {
         didSet {
             uniforms.modelMatrix = calcModelMatrix()
             uniforms.normalMatrix = uniforms.modelMatrix.inverse.transpose
-            GZLogFunc()
         }
     }
     var mesh: MTKMesh
