@@ -351,7 +351,7 @@ class Renderer: NSObject, MTKViewDelegate {
                     }
                     else {
                         x.render(renderEncoder: renderEncoder) { m in
-                            m.rotationY = rotation
+                            m.rotationY = rotation * Float(index + 1)
                         }
                     }
 //                    let u = x.uniforms.normalMatrix * SIMD3<Float>.init(x: 1, y: 0, z: 0)
