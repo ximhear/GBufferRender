@@ -42,6 +42,7 @@ typedef NS_ENUM(NSInteger, VertexAttribute)
 typedef NS_ENUM(NSInteger, TextureIndex)
 {
     TextureIndexColor    = 0,
+    TextureIndexDepth    = 1,
 };
 
 typedef NS_ENUM(NSInteger, LightType)
@@ -53,6 +54,7 @@ typedef struct
 {
     matrix_float4x4 projectionMatrix;
     matrix_float4x4 viewMatrix;
+    matrix_float4x4 shadowMatrix;
 } Uniforms;
 
 typedef struct
