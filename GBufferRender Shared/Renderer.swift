@@ -86,7 +86,7 @@ class Renderer: NSObject, MTKViewDelegate {
             var mesh = try Renderer.buildMesh(device: device, mtlVertexDescriptor: mtlVertexDescriptor)
             var model = Model(mesh: mesh)
             model.rotationY = Float.pi / 4.0
-            model.scale = [1, 2, 1]
+            model.scale = [1, 1, 1]
             model.position = [1, -1, 0]
             model.color = [1, 1, 0, 1]
             models.append(model)
@@ -95,7 +95,7 @@ class Renderer: NSObject, MTKViewDelegate {
             model = Model(mesh: mesh)
             model.rotationY = Float.pi / 4.0
             model.scale = [1, 1, 1]
-            model.position = [-1, -1, 0]
+            model.position = [-2, -1, 0]
             model.color = [1, 0, 1, 1]
             models.append(model)
             
@@ -120,7 +120,7 @@ class Renderer: NSObject, MTKViewDelegate {
         
         super.init()
         
-        let sunlight = Light(type: .sunlight, color: [1, 1, 1, 1], position: [4, 1, -1], target: [0, 0, 0], angle: Float.pi / 6.0)
+        let sunlight = Light(type: .sunlight, color: [1, 1, 1, 1], position: [1, 1, -1], target: [0, 0, 0], angle: Float.pi / 6.0)
         self.lights.append(sunlight)
         
         let spotlight = Light(type: .spotlight, color: [0, 1, 0, 1], position: [-1, 1, -1], target: [0, 0, 0], angle: Float.pi / 6.0)
@@ -282,7 +282,7 @@ class Renderer: NSObject, MTKViewDelegate {
         
         let viewMatrix = matrix4x4_translation(0.0, 0.0, 8.0)
         uniforms[0].viewMatrix = viewMatrix
-        rotation += 0.01
+//        rotation += 0.01
         uniforms[0].shadowMatrix = shadowMatrix
     }
     
@@ -341,7 +341,7 @@ class Renderer: NSObject, MTKViewDelegate {
                     }
                     else {
                         x.render(renderEncoder: renderEncoder) { m in
-                            m.rotationY = rotation * Float(index + 1)
+//                            m.rotationY = rotation * Float(index + 1)
                         }
                     }
                 }
@@ -387,7 +387,7 @@ class Renderer: NSObject, MTKViewDelegate {
             }
             else {
                 x.render(renderEncoder: renderEncoder) { m in
-                    m.rotationY = rotation * Float(index + 1)
+//                    m.rotationY = rotation * Float(index + 1)
                 }
             }
         }
