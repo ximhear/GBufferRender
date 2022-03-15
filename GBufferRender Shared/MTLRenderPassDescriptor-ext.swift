@@ -13,6 +13,6 @@ extension MTLRenderPassDescriptor {
         depthAttachment.texture = texture
         depthAttachment.loadAction = .clear
         depthAttachment.storeAction = .store
-        depthAttachment.clearDepth = 1
+        depthAttachment.clearDepth = 1.0
     }
 }
