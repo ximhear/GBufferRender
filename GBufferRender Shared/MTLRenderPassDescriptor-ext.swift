@@ -21,6 +21,6 @@ extension MTLRenderPassDescriptor {
         a.texture = texture
         a.loadAction = .clear
         a.storeAction = .store
-        a.clearColor = MTLClearColorMake(0.73, 0.92, 1, 1)
+        a.clearColor = MTLClearColorMake(0.0, 0.0, 0.0, 1)
     }
 }

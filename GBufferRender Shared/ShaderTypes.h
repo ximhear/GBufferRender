@@ -49,6 +49,7 @@ typedef NS_ENUM(NSInteger, LightType)
 {
     LightTypeSunlight    = 0,
     LightTypeSpotlight    = 1,
+    LightTypePointlight    = 2
 };
 typedef struct
 {
@@ -66,10 +67,13 @@ typedef struct
 
 typedef struct {
     LightType type;
-    vector_float4 color;
+    vector_float3 color;
     vector_float3 position;
     vector_float3 target;
-    float angle;
+    vector_float3 attenuation;
+    float coneAngle;
+    vector_float3 coneDirection;
+    float coneAttenuation;
 } Light;
 
 #endif /* ShaderTypes_h */

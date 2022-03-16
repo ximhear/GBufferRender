@@ -41,18 +41,6 @@ fragment GBufferOut gBufferFragment(VertexOut in [[ stage_in ]],
     xy = xy * 0.5 + 0.5;
     xy.y = 1 - xy.y;
 
-    float3 n = normalize(in.worldNormal);
-    float diffuseIntensity = 1;
-    for (int i = 0 ; i < lightCount; i++) {
-        if (lights[i].type == LightTypeSunlight) {
-            float3 dir = -normalize(lights[i].target - lights[i].position);
-            diffuseIntensity = saturate(dot(dir, n));
-            if (diffuseIntensity < 0.1) {
-                diffuseIntensity = 0.1;
-            }
-        }
-    }
-    
     constexpr sampler s(coord::normalized, filter::linear, address::clamp_to_edge, compare_func::less);
     float shadow = shadowTextue.sample(s, xy);
     float current = in.shadowPosition.z / in.shadowPosition.w;

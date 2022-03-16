@@ -43,6 +43,8 @@ class Renderer: NSObject, MTKViewDelegate {
     
     var models: [Model] = []
     var lights: [Light] = []
+    var lightsBuffer: MTLBuffer!
+    
     var shadowTexture: MTLTexture!
     let shadowRenderPassDescriptor = MTLRenderPassDescriptor()
     var shadowPipelineState: MTLRenderPipelineState!
@@ -55,10 +57,33 @@ class Renderer: NSObject, MTKViewDelegate {
     var gBufferPipelineState: MTLRenderPipelineState!
     var gBufferRenderPassDescriptor: MTLRenderPassDescriptor!
     
+    var compositionPipelinestate: MTLRenderPipelineState!
+    var quadVerticesBuffer: MTLBuffer!
+    var quadTexCoordsBuffer: MTLBuffer!
+    
+    let quadVertices: [Float] = [
+        -1.0, 1.0,
+         1.0, -1.0,
+         -1, -1,
+         -1, 1,
+         1, 1,
+         1, -1
+    ]
+    
+    let quadTexCoords: [Float] = [
+        0, 0,
+        1, 1,
+        0, 1,
+        0, 0,
+        1, 0,
+        1, 1
+    ]
+    
     init?(metalKitView: MTKView) {
         self.device = metalKitView.device!
         guard let queue = self.device.makeCommandQueue() else { return nil }
         self.commandQueue = queue
+        metalKitView.framebufferOnly = false
         
         let uniformBufferSize = alignedUniformsSize * maxBuffersInFlight
         
@@ -96,7 +121,7 @@ class Renderer: NSObject, MTKViewDelegate {
             model.rotationY = Float.pi / 4.0
             model.scale = [1, 3, 1]
             model.position = [1, 1.5, -1]
-            model.color = [1, 1, 0, 1]
+            model.color = [1, 0.8, 0.1, 1]
             models.append(model)
             
             mesh = try Renderer.buildMesh(device: device, mtlVertexDescriptor: mtlVertexDescriptor)
@@ -104,7 +129,7 @@ class Renderer: NSObject, MTKViewDelegate {
             model.rotationY = Float.pi / 4.0
             model.scale = [1, 1, 1]
             model.position = [-1, 1.5, 1.5]
-            model.color = [1, 0, 1, 1]
+            model.color = [0.85, 0.25, 0.75, 1]
             models.append(model)
             
             mesh = try Renderer.buildMesh(device: device, mtlVertexDescriptor: mtlVertexDescriptor)
@@ -112,7 +137,7 @@ class Renderer: NSObject, MTKViewDelegate {
             model.rotationY = 0
             model.scale = [10, 1, 10]
             model.position = [0, -0.5, 2]
-            model.color = [0, 1, 0, 1]
+            model.color = [1, 1, 1, 1]
             models.append(model)
         } catch {
             print("Unable to build MetalKit Mesh. Error info: \(error)")
@@ -128,14 +153,23 @@ class Renderer: NSObject, MTKViewDelegate {
         
         super.init()
         
-        let sunlight = Light(type: .sunlight, color: [1, 1, 1, 1], position: [1, 1, -1], target: [0, 0, 0], angle: Float.pi / 6.0)
+        let sunlight = Light(type: .sunlight, color: [1, 1, 1], position: [1, 1, -1], target: [0, 0, 0], attenuation: [1, 1, 1], coneAngle: 0, coneDirection: [0, 0, 0], coneAttenuation: 1)
         self.lights.append(sunlight)
         
-        let spotlight = Light(type: .spotlight, color: [0, 1, 0, 1], position: [-1, 1, -1], target: [0, 0, 0], angle: Float.pi / 6.0)
-        self.lights.append(spotlight)
+        let pointlight = Light(type: .pointlight, color: [1, 0, 0], position: [0, 0.1, 0], target: [0, 0, 0], attenuation: [1, 3, 4], coneAngle: 0, coneDirection: [0, 0, 0], coneAttenuation: 1)
+//        self.lights.append(pointlight)
+        createPointLights(count: 50, min: [-5, 0, -5], max: [5, 0.05, 5])
+        lightsBuffer = device.makeBuffer(bytes: lights, length: MemoryLayout<Light>.stride * lights.count, options: [])
+        
         buildShadowTexture(size: metalKitView.drawableSize)
         buildShadowPipelineState(mtlVertexDescriptor: mtlVertexDescriptor)
         buildGBufferPipelineState(mtlVertexDescriptor: mtlVertexDescriptor)
+        buildCompositionPipelineState(metalView: metalKitView)
+        
+        quadVerticesBuffer = device.makeBuffer(bytes: quadVertices, length: MemoryLayout<Float>.size * quadVertices.count, options: [])
+        quadVerticesBuffer.label = "Quad vertices"
+        quadTexCoordsBuffer = device.makeBuffer(bytes: quadTexCoords, length: MemoryLayout<Float>.size * quadTexCoords.count, options: [])
+        quadTexCoordsBuffer.label = "Quad texCoords"
     }
     
     class func buildMetalVertexDescriptor() -> MTLVertexDescriptor {
@@ -316,6 +350,23 @@ class Renderer: NSObject, MTKViewDelegate {
         }
     }
     
+    func buildCompositionPipelineState(metalView: MTKView) {
+        let d = MTLRenderPipelineDescriptor()
+        d.colorAttachments[0].pixelFormat = metalView.colorPixelFormat
+        d.depthAttachmentPixelFormat = metalView.depthStencilPixelFormat
+        d.stencilAttachmentPixelFormat = metalView.depthStencilPixelFormat
+        d.label = "Composition state"
+        let library = device.makeDefaultLibrary()
+        d.vertexFunction = library?.makeFunction(name: "compositionVert")
+        d.fragmentFunction = library?.makeFunction(name: "compositionFrag")
+        do {
+            compositionPipelinestate = try device.makeRenderPipelineState(descriptor: d)
+        }
+        catch {
+            fatalError(error.localizedDescription)
+        }
+    }
+    
     private func updateDynamicBufferState() {
         /// Update the state of our uniform buffers before rendering
         
@@ -332,7 +383,7 @@ class Renderer: NSObject, MTKViewDelegate {
         uniforms[0].projectionMatrix = projectionMatrix
         
         let viewMatrix = matrix4x4_translation(0.0, -1.5, 8.0)
-        uniforms[0].viewMatrix = viewMatrix
+        uniforms[0].viewMatrix = viewMatrix * float4x4(matrix4x4_rotation(radians: -Float.pi / 6.0, axis: [1, 0, 0]))
         rotation += 0.01
         uniforms[0].shadowMatrix = shadowMatrix
     }
@@ -340,6 +391,9 @@ class Renderer: NSObject, MTKViewDelegate {
     func draw(in view: MTKView) {
         /// Per frame updates hare
         
+        guard let drawable = view.currentDrawable else {
+            return
+        }
         _ = inFlightSemaphore.wait(timeout: DispatchTime.distantFuture)
         
         if let commandBuffer = commandQueue.makeCommandBuffer() {
@@ -364,53 +418,75 @@ class Renderer: NSObject, MTKViewDelegate {
             self.updateDynamicBufferState()
             self.updateGameState()
             
-            /// Delay getting the currentRenderPassDescriptor until we absolutely need it to avoid
-            ///   holding onto the drawable and blocking the display pipeline any longer than necessary
-            let renderPassDescriptor = view.currentRenderPassDescriptor
+//            guard let blitEncoder = commandBuffer.makeBlitCommandEncoder() else {
+//                return
+//            }
+//
+//            blitEncoder.pushDebugGroup("Blit")
+//            blitEncoder.label = "Blit encoder"
+//            let origin = MTLOrigin(x: 0, y: 0, z: 0)
+//            let size = MTLSize(width: Int(view.drawableSize.width), height: Int(view.drawableSize.height), depth: 1)
+//            blitEncoder.copy(from: albedoTexture, sourceSlice: 0,
+//                             sourceLevel: 0,
+//                             sourceOrigin: origin,
+//                             sourceSize: size,
+//                             to: drawable.texture,
+//                             destinationSlice: 0,
+//                             destinationLevel: 0,
+//                             destinationOrigin: origin
+//            )
+//            blitEncoder.endEncoding()
+//            blitEncoder.popDebugGroup()
             
-            if let renderPassDescriptor = renderPassDescriptor, let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) {
-                
-                /// Final pass rendering code here
-                renderEncoder.label = "Primary Render Encoder"
-                
-                renderEncoder.pushDebugGroup("Draw Box")
-                
-                renderEncoder.setCullMode(.back)
-                
-                renderEncoder.setFrontFacing(.clockwise)
-                
-                renderEncoder.setRenderPipelineState(pipelineState)
-                
-                renderEncoder.setDepthStencilState(depthState)
-                
-                renderEncoder.setVertexBuffer(dynamicUniformBuffer, offset:uniformBufferOffset, index: BufferIndex.uniforms.rawValue)
-                renderEncoder.setFragmentBuffer(dynamicUniformBuffer, offset:uniformBufferOffset, index: BufferIndex.uniforms.rawValue)
-                var lightCount = lights.count
-                renderEncoder.setFragmentBytes(&lightCount, length: MemoryLayout<Int>.stride, index: BufferIndex.lightCount.rawValue)
-                renderEncoder.setFragmentBytes(&lights, length: MemoryLayout<Light>.stride * lightCount, index: BufferIndex.lights.rawValue)
-                renderEncoder.setFragmentTexture(shadowTexture, index: TextureIndex.depth.rawValue)
-                
-                for (index, x) in models.enumerated() {
-                    if index == models.count - 1 {
-                        x.render(renderEncoder: renderEncoder) { m in
-                        }
-                    }
-                    else {
-                        x.render(renderEncoder: renderEncoder) { m in
-                            m.rotationY = rotation * Float(index + 1)
-                        }
-                    }
-                }
-                
-                renderEncoder.popDebugGroup()
-                
-                renderEncoder.endEncoding()
-                
-                if let drawable = view.currentDrawable {
-                    commandBuffer.present(drawable)
-                }
+            if let d = view.currentRenderPassDescriptor, let compositionEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: d) {
+                renderCompositionPass(renderEncoder: compositionEncoder)
             }
+//            let renderPassDescriptor = view.currentRenderPassDescriptor
+//
+//            if let renderPassDescriptor = renderPassDescriptor, let renderEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: renderPassDescriptor) {
+//
+//                /// Final pass rendering code here
+//                renderEncoder.label = "Primary Render Encoder"
+//
+//                renderEncoder.pushDebugGroup("Draw Box")
+//
+//                renderEncoder.setCullMode(.back)
+//
+//                renderEncoder.setFrontFacing(.clockwise)
+//
+//                renderEncoder.setRenderPipelineState(pipelineState)
+//
+//                renderEncoder.setDepthStencilState(depthState)
+//
+//                renderEncoder.setVertexBuffer(dynamicUniformBuffer, offset:uniformBufferOffset, index: BufferIndex.uniforms.rawValue)
+//                renderEncoder.setFragmentBuffer(dynamicUniformBuffer, offset:uniformBufferOffset, index: BufferIndex.uniforms.rawValue)
+//                var lightCount = lights.count
+//                renderEncoder.setFragmentBytes(&lightCount, length: MemoryLayout<Int>.stride, index: BufferIndex.lightCount.rawValue)
+//                renderEncoder.setFragmentBytes(&lights, length: MemoryLayout<Light>.stride * lightCount, index: BufferIndex.lights.rawValue)
+//                renderEncoder.setFragmentTexture(shadowTexture, index: TextureIndex.depth.rawValue)
+//
+//                for (index, x) in models.enumerated() {
+//                    if index == models.count - 1 {
+//                        x.render(renderEncoder: renderEncoder) { m in
+//                        }
+//                    }
+//                    else {
+//                        x.render(renderEncoder: renderEncoder) { m in
+//                            m.rotationY = rotation * Float(index + 1)
+//                        }
+//                    }
+//                }
+//
+//                renderEncoder.popDebugGroup()
+//
+//                renderEncoder.endEncoding()
+//
+//                if let drawable = view.currentDrawable {
+//                    commandBuffer.present(drawable)
+//                }
+//            }
             
+            commandBuffer.present(drawable)
             commandBuffer.commit()
         }
     }
@@ -468,7 +544,7 @@ class Renderer: NSObject, MTKViewDelegate {
         renderEncoder.setFragmentBuffer(dynamicUniformBuffer, offset:uniformBufferOffset, index: BufferIndex.uniforms.rawValue)
         var lightCount = lights.count
         renderEncoder.setFragmentBytes(&lightCount, length: MemoryLayout<Int>.stride, index: BufferIndex.lightCount.rawValue)
-        renderEncoder.setFragmentBytes(&lights, length: MemoryLayout<Light>.stride * lightCount, index: BufferIndex.lights.rawValue)
+        renderEncoder.setFragmentBuffer(lightsBuffer, offset: 0, index: BufferIndex.lights.rawValue)
         renderEncoder.setFragmentTexture(shadowTexture, index: TextureIndex.depth.rawValue)
         
         for (index, x) in models.enumerated() {
@@ -487,6 +563,28 @@ class Renderer: NSObject, MTKViewDelegate {
         renderEncoder.popDebugGroup()
     }
     
+    func renderCompositionPass(renderEncoder: MTLRenderCommandEncoder) {
+        renderEncoder.pushDebugGroup("Composition pass")
+        renderEncoder.label = "Composition encoder"
+        renderEncoder.setRenderPipelineState(compositionPipelinestate)
+        renderEncoder.setDepthStencilState(depthState)
+        
+        renderEncoder.setVertexBuffer(quadVerticesBuffer, offset: 0, index: 0)
+        renderEncoder.setVertexBuffer(quadTexCoordsBuffer, offset: 0, index: 1)
+        
+        renderEncoder.setFragmentTexture(albedoTexture, index: 0)
+        renderEncoder.setFragmentTexture(normalTexture, index: 1)
+        renderEncoder.setFragmentTexture(positionTexture, index: 2)
+        var lightCount = lights.count
+        renderEncoder.setFragmentBytes(&lightCount, length: MemoryLayout<Int>.stride, index: 0)
+//        renderEncoder.setFragmentBytes(&lights, length: MemoryLayout<Light>.stride * lights.count, index: 1)
+        renderEncoder.setFragmentBuffer(lightsBuffer, offset: 0, index: 1)
+        
+        renderEncoder.drawPrimitives(type: .triangle, vertexStart: 0, vertexCount: quadVertices.count)
+        renderEncoder.endEncoding()
+        renderEncoder.popDebugGroup()
+    }
+    
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
         /// Respond to drawable size or orientation changes here
         
@@ -494,6 +592,51 @@ class Renderer: NSObject, MTKViewDelegate {
         projectionMatrix = matrix_perspective_left_hand(fovyRadians: radians_from_degrees(65), aspectRatio:aspect, nearZ: 0.1, farZ: 100.0)
         buildShadowTexture(size: size)
         buildGBufferRenderPassDescriptor(size: size)
+    }
+    
+    func createPointLights(count: Int, min: SIMD3<Float>, max: SIMD3<Float>) {
+        let colors: [SIMD3<Float>] = [
+            SIMD3<Float>(1, 0, 0),
+            SIMD3<Float>(1, 1, 0),
+            SIMD3<Float>(1, 1, 1),
+            SIMD3<Float>(0, 1, 0),
+            SIMD3<Float>(0, 1, 1),
+            SIMD3<Float>(0, 0, 1),
+            SIMD3<Float>(0, 1, 1),
+            SIMD3<Float>(1, 0, 1) ]
+        let newMin: SIMD3<Float> = [min.x*100, min.y*100, min.z*100]
+        let newMax: SIMD3<Float> = [max.x*100, max.y*100, max.z*100]
+        for _ in 0..<count {
+            var light = buildDefaultLight()
+            light.type = .pointlight
+            let x = Float(random(range: Int(newMin.x)...Int(newMax.x))) * 0.01
+            let y = Float(random(range: Int(newMin.y)...Int(newMax.y))) * 0.01
+            let z = Float(random(range: Int(newMin.z)...Int(newMax.z))) * 0.01
+            light.position = [x, y, z]
+            light.color = colors[random(range: 0...colors.count)]
+            light.attenuation = [2, 5, 9]
+            lights.append(light)
+        }
+    }
+    
+    func buildDefaultLight() -> Light {
+        var light = Light()
+        light.position = [0, 0, 0]
+        light.color = [1, 1, 1]
+        light.target = [0, 0, 0]
+        light.attenuation = [1, 0, 0]
+        light.type = .sunlight
+        return light
+    }
+    
+    func random(range: CountableClosedRange<Int>) -> Int {
+        var offset = 0
+        if range.lowerBound < 0 {
+            offset = abs(range.lowerBound)
+        }
+        let min = UInt32(range.lowerBound + offset)
+        let max = UInt32(range.upperBound + offset)
+        return Int(min + arc4random_uniform(max-min)) - offset
     }
 }
 

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		EC87B9D727E252EF00B67975 /* Composition.metal in Sources */ = {isa = PBXBuildFile; fileRef = EC87B9D627E252EF00B67975 /* Composition.metal */; };
+		EC87B9D827E252EF00B67975 /* Composition.metal in Sources */ = {isa = PBXBuildFile; fileRef = EC87B9D627E252EF00B67975 /* Composition.metal */; };
 		ECB85B5327E0EF0400652CBC /* MTLRenderPassDescriptor-ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECB85B5227E0EF0400652CBC /* MTLRenderPassDescriptor-ext.swift */; };
 		ECB85B5427E0EF0400652CBC /* MTLRenderPassDescriptor-ext.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECB85B5227E0EF0400652CBC /* MTLRenderPassDescriptor-ext.swift */; };
 		ECB85B5627E0F18D00652CBC /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECB85B5527E0F18D00652CBC /* Model.swift */; };
@@ -37,6 +39,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		EC87B9D627E252EF00B67975 /* Composition.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Composition.metal; sourceTree = "<group>"; };
 		ECB85B5227E0EF0400652CBC /* MTLRenderPassDescriptor-ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MTLRenderPassDescriptor-ext.swift"; sourceTree = "<group>"; };
 		ECB85B5527E0F18D00652CBC /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		ECB85B5827E0F8FA00652CBC /* Shadow.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shadow.metal; sourceTree = "<group>"; };
@@ -93,6 +96,7 @@
 				ECC17B2827DFBB1C00AFCE37 /* GZLog.swift */,
 				ECC17AF227DF962100AFCE37 /* Shaders.metal */,
 				ECC17AF327DF962100AFCE37 /* Renderer.swift */,
+				EC87B9D627E252EF00B67975 /* Composition.metal */,
 				ECB85B5827E0F8FA00652CBC /* Shadow.metal */,
 				ECBEE22C27E2419D00AB0D6F /* GBuffer.metal */,
 				ECB85B5527E0F18D00652CBC /* Model.swift */,
@@ -243,6 +247,7 @@
 				ECB85B5327E0EF0400652CBC /* MTLRenderPassDescriptor-ext.swift in Sources */,
 				ECC17B1527DF962200AFCE37 /* Shaders.metal in Sources */,
 				ECC17B0027DF962200AFCE37 /* GameViewController.swift in Sources */,
+				EC87B9D727E252EF00B67975 /* Composition.metal in Sources */,
 				ECC17AFE27DF962200AFCE37 /* AppDelegate.swift in Sources */,
 				ECC17B2627DF9AB100AFCE37 /* MathLibrary.swift in Sources */,
 				ECB85B5927E0F8FA00652CBC /* Shadow.metal in Sources */,
@@ -260,6 +265,7 @@
 				ECB85B5427E0EF0400652CBC /* MTLRenderPassDescriptor-ext.swift in Sources */,
 				ECC17B1627DF962200AFCE37 /* Shaders.metal in Sources */,
 				ECC17B1027DF962200AFCE37 /* GameViewController.swift in Sources */,
+				EC87B9D827E252EF00B67975 /* Composition.metal in Sources */,
 				ECC17B0E27DF962200AFCE37 /* AppDelegate.swift in Sources */,
 				ECC17B2727DF9AB100AFCE37 /* MathLibrary.swift in Sources */,
 				ECB85B5A27E0F8FA00652CBC /* Shadow.metal in Sources */,
