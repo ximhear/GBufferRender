@@ -15,4 +15,12 @@ extension MTLRenderPassDescriptor {
         depthAttachment.storeAction = .store
         depthAttachment.clearDepth = 1.0
     }
+    
+    func setColorAttachment(position: Int, texture: MTLTexture) {
+        let a: MTLRenderPassColorAttachmentDescriptor = colorAttachments[position]
+        a.texture = texture
+        a.loadAction = .clear
+        a.storeAction = .store
+        a.clearColor = MTLClearColorMake(0.73, 0.92, 1, 1)
+    }
 }

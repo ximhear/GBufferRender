@@ -47,6 +47,14 @@ class Renderer: NSObject, MTKViewDelegate {
     let shadowRenderPassDescriptor = MTLRenderPassDescriptor()
     var shadowPipelineState: MTLRenderPipelineState!
     
+    var albedoTexture: MTLTexture!
+    var normalTexture: MTLTexture!
+    var positionTexture: MTLTexture!
+    var depthTexture: MTLTexture!
+   
+    var gBufferPipelineState: MTLRenderPipelineState!
+    var gBufferRenderPassDescriptor: MTLRenderPassDescriptor!
+    
     init?(metalKitView: MTKView) {
         self.device = metalKitView.device!
         guard let queue = self.device.makeCommandQueue() else { return nil }
@@ -127,6 +135,7 @@ class Renderer: NSObject, MTKViewDelegate {
         self.lights.append(spotlight)
         buildShadowTexture(size: metalKitView.drawableSize)
         buildShadowPipelineState(mtlVertexDescriptor: mtlVertexDescriptor)
+        buildGBufferPipelineState(mtlVertexDescriptor: mtlVertexDescriptor)
     }
     
     class func buildMetalVertexDescriptor() -> MTLVertexDescriptor {
@@ -260,9 +269,51 @@ class Renderer: NSObject, MTKViewDelegate {
         return texture
     }
     
+    func buildGBufferTexture(size: CGSize) {
+        albedoTexture = buildTexture(pixelFormat: .bgra8Unorm, size: size, label: "Albedo texxture")
+        normalTexture = buildTexture(pixelFormat: .rgba16Float, size: size, label: "Normal texxture")
+        positionTexture = buildTexture(pixelFormat: .rgba16Float, size: size, label: "Position texxture")
+        depthTexture = buildTexture(pixelFormat: .depth32Float, size: size, label: "Depth texxture")
+    }
+    
     func buildShadowTexture(size: CGSize) {
         shadowTexture = buildTexture(pixelFormat: .depth32Float, size: size, label: "Shadow")
         shadowRenderPassDescriptor.setUpDepthAttachment(texture: shadowTexture)
+    }
+    
+    
+    func buildGBufferRenderPassDescriptor(size: CGSize) {
+        gBufferRenderPassDescriptor = MTLRenderPassDescriptor()
+        buildGBufferTexture(size: size)
+        let textures: [MTLTexture] = [
+            albedoTexture,
+            normalTexture,
+            positionTexture
+        ]
+        for (position, texture) in textures.enumerated() {
+            gBufferRenderPassDescriptor.setColorAttachment(position: position, texture: texture)
+        }
+        gBufferRenderPassDescriptor.setUpDepthAttachment(texture: depthTexture)
+    }
+    
+    func buildGBufferPipelineState(mtlVertexDescriptor: MTLVertexDescriptor) {
+        let d = MTLRenderPipelineDescriptor()
+        d.colorAttachments[0].pixelFormat = .bgra8Unorm
+        d.colorAttachments[1].pixelFormat = .rgba16Float
+        d.colorAttachments[2].pixelFormat = .rgba16Float
+        d.depthAttachmentPixelFormat = .depth32Float
+        d.label = "BGuffer state"
+        
+        let library = device.makeDefaultLibrary()
+        d.vertexFunction = library?.makeFunction(name: "vertexShader")
+        d.fragmentFunction = library?.makeFunction(name: "gBufferFragment")
+        d.vertexDescriptor = mtlVertexDescriptor
+        do {
+            gBufferPipelineState = try device.makeRenderPipelineState(descriptor: d)
+        }
+        catch {
+            fatalError(error.localizedDescription)
+        }
     }
     
     private func updateDynamicBufferState() {
@@ -304,6 +355,11 @@ class Renderer: NSObject, MTKViewDelegate {
             self.updateDynamicBufferState()
             
             renderShadowPass(renderEncoder: shadowEncoder)
+            
+            guard let gBufferEncoder = commandBuffer.makeRenderCommandEncoder(descriptor: gBufferRenderPassDescriptor) else {
+                return
+            }
+            renderGBufferPass(renderEncoder: gBufferEncoder)
             
             self.updateDynamicBufferState()
             self.updateGameState()
@@ -395,12 +451,49 @@ class Renderer: NSObject, MTKViewDelegate {
         renderEncoder.popDebugGroup()
     }
     
+    func renderGBufferPass(renderEncoder: MTLRenderCommandEncoder) {
+        renderEncoder.pushDebugGroup("GBuffer pass")
+        renderEncoder.label = "GBuffer encoder"
+        
+        renderEncoder.setRenderPipelineState(gBufferPipelineState)
+        renderEncoder.setDepthStencilState(depthState)
+        
+        self.updateDynamicBufferState()
+        self.updateGameState()
+        
+        renderEncoder.setCullMode(.back)
+        renderEncoder.setFrontFacing(.clockwise)
+        
+        renderEncoder.setVertexBuffer(dynamicUniformBuffer, offset:uniformBufferOffset, index: BufferIndex.uniforms.rawValue)
+        renderEncoder.setFragmentBuffer(dynamicUniformBuffer, offset:uniformBufferOffset, index: BufferIndex.uniforms.rawValue)
+        var lightCount = lights.count
+        renderEncoder.setFragmentBytes(&lightCount, length: MemoryLayout<Int>.stride, index: BufferIndex.lightCount.rawValue)
+        renderEncoder.setFragmentBytes(&lights, length: MemoryLayout<Light>.stride * lightCount, index: BufferIndex.lights.rawValue)
+        renderEncoder.setFragmentTexture(shadowTexture, index: TextureIndex.depth.rawValue)
+        
+        for (index, x) in models.enumerated() {
+            if index == models.count - 1 {
+                x.render(renderEncoder: renderEncoder) { m in
+                }
+            }
+            else {
+                x.render(renderEncoder: renderEncoder) { m in
+                    m.rotationY = rotation * Float(index + 1)
+                }
+            }
+        }
+        
+        renderEncoder.endEncoding()
+        renderEncoder.popDebugGroup()
+    }
+    
     func mtkView(_ view: MTKView, drawableSizeWillChange size: CGSize) {
         /// Respond to drawable size or orientation changes here
         
         let aspect = Float(size.width) / Float(size.height)
         projectionMatrix = matrix_perspective_left_hand(fovyRadians: radians_from_degrees(65), aspectRatio:aspect, nearZ: 0.1, farZ: 100.0)
         buildShadowTexture(size: size)
+        buildGBufferRenderPassDescriptor(size: size)
     }
 }
 

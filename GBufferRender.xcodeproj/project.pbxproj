@@ -13,6 +13,8 @@
 		ECB85B5727E0F18D00652CBC /* Model.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECB85B5527E0F18D00652CBC /* Model.swift */; };
 		ECB85B5927E0F8FA00652CBC /* Shadow.metal in Sources */ = {isa = PBXBuildFile; fileRef = ECB85B5827E0F8FA00652CBC /* Shadow.metal */; };
 		ECB85B5A27E0F8FA00652CBC /* Shadow.metal in Sources */ = {isa = PBXBuildFile; fileRef = ECB85B5827E0F8FA00652CBC /* Shadow.metal */; };
+		ECBEE22D27E2419D00AB0D6F /* GBuffer.metal in Sources */ = {isa = PBXBuildFile; fileRef = ECBEE22C27E2419D00AB0D6F /* GBuffer.metal */; };
+		ECBEE22E27E2419D00AB0D6F /* GBuffer.metal in Sources */ = {isa = PBXBuildFile; fileRef = ECBEE22C27E2419D00AB0D6F /* GBuffer.metal */; };
 		ECC17AFE27DF962200AFCE37 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECC17AFD27DF962200AFCE37 /* AppDelegate.swift */; };
 		ECC17B0027DF962200AFCE37 /* GameViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = ECC17AFF27DF962200AFCE37 /* GameViewController.swift */; };
 		ECC17B0327DF962200AFCE37 /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = ECC17B0127DF962200AFCE37 /* Main.storyboard */; };
@@ -38,6 +40,7 @@
 		ECB85B5227E0EF0400652CBC /* MTLRenderPassDescriptor-ext.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "MTLRenderPassDescriptor-ext.swift"; sourceTree = "<group>"; };
 		ECB85B5527E0F18D00652CBC /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		ECB85B5827E0F8FA00652CBC /* Shadow.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shadow.metal; sourceTree = "<group>"; };
+		ECBEE22C27E2419D00AB0D6F /* GBuffer.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = GBuffer.metal; sourceTree = "<group>"; };
 		ECC17AF227DF962100AFCE37 /* Shaders.metal */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.metal; path = Shaders.metal; sourceTree = "<group>"; };
 		ECC17AF327DF962100AFCE37 /* Renderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Renderer.swift; sourceTree = "<group>"; };
 		ECC17AF427DF962100AFCE37 /* ShaderTypes.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ShaderTypes.h; sourceTree = "<group>"; };
@@ -91,6 +94,7 @@
 				ECC17AF227DF962100AFCE37 /* Shaders.metal */,
 				ECC17AF327DF962100AFCE37 /* Renderer.swift */,
 				ECB85B5827E0F8FA00652CBC /* Shadow.metal */,
+				ECBEE22C27E2419D00AB0D6F /* GBuffer.metal */,
 				ECB85B5527E0F18D00652CBC /* Model.swift */,
 				ECC17AF427DF962100AFCE37 /* ShaderTypes.h */,
 				ECB85B5227E0EF0400652CBC /* MTLRenderPassDescriptor-ext.swift */,
@@ -243,6 +247,7 @@
 				ECC17B2627DF9AB100AFCE37 /* MathLibrary.swift in Sources */,
 				ECB85B5927E0F8FA00652CBC /* Shadow.metal in Sources */,
 				ECB85B5627E0F18D00652CBC /* Model.swift in Sources */,
+				ECBEE22D27E2419D00AB0D6F /* GBuffer.metal in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -259,6 +264,7 @@
 				ECC17B2727DF9AB100AFCE37 /* MathLibrary.swift in Sources */,
 				ECB85B5A27E0F8FA00652CBC /* Shadow.metal in Sources */,
 				ECB85B5727E0F18D00652CBC /* Model.swift in Sources */,
+				ECBEE22E27E2419D00AB0D6F /* GBuffer.metal in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
