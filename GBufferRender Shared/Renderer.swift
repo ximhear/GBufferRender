@@ -383,7 +383,7 @@ class Renderer: NSObject, MTKViewDelegate {
         uniforms[0].projectionMatrix = projectionMatrix
         
         let viewMatrix = matrix4x4_translation(0.0, -1.5, 8.0)
-        uniforms[0].viewMatrix = viewMatrix * float4x4(matrix4x4_rotation(radians: -Float.pi / 6.0, axis: [1, 0, 0]))
+        uniforms[0].viewMatrix = viewMatrix * matrix4x4_rotation(radians: -Float.pi / 6.0, axis: [1, 0, 0])
         rotation += 0.01
         uniforms[0].shadowMatrix = shadowMatrix
     }
