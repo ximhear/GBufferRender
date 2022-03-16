@@ -158,7 +158,7 @@ class Renderer: NSObject, MTKViewDelegate {
         
         let pointlight = Light(type: .pointlight, color: [1, 0, 0], position: [0, 0.1, 0], target: [0, 0, 0], attenuation: [1, 3, 4], coneAngle: 0, coneDirection: [0, 0, 0], coneAttenuation: 1)
 //        self.lights.append(pointlight)
-        createPointLights(count: 50, min: [-5, 0, -5], max: [5, 0.05, 5])
+        createPointLights(count: 150, min: [-5, 0, -5], max: [5, 0.05, 5])
         lightsBuffer = device.makeBuffer(bytes: lights, length: MemoryLayout<Light>.stride * lights.count, options: [])
         
         buildShadowTexture(size: metalKitView.drawableSize)
